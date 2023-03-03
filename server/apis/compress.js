@@ -19,37 +19,40 @@ router.post('/', upload.single('file'), async (req, res) => {
     // updated unique name of file that has been send by client 
     const fileName = await getFileName();
 
-    // get the requested compression size
-    const compressionSizeInKB = req.body.compressionSizeInKB;
-
     // delete the generated image after 10min
     setTimeout(() => {
         if (fs.existsSync(`server/uploads/images/${fileName}`)) {
             fs.unlinkSync(`server/uploads/images/${fileName}`);
         }
-    }, 10000);
+    }, 30000);
 
-    // process the image 
-    let result = compress(fileName, compressionSizeInKB);
+    // image data
+    // get the requested compression size
+    const compressionSizeInKB = req.body.compressionSizeInKB;
 
-    // handle result
-    result.then((status) => {
-        // response
-        if (status) {
-            // send the image id from which one can download the image from download endpoint
-            res.status(200).send({
-                status: true,
-                response: fileName
-            })
-        } else {
-            res.status(500).send({
-                status: false,
-                response: "Unable to compress the image"
-            });
+    // path for images directory (this directory contains the images that has to be compressed)
+    const inputDirPath = "server/uploads/images/";
 
-        }
-    })
+    // path for compressed images directory
+    const outputDirPath = "server/uploads/compressed/";
 
+    // get the file path of the file
+    const filepath = `${inputDirPath}${fileName}`;
+
+
+    // process the image and get it's response
+    let {
+        status,
+        message,
+        id
+    } = await compress(fileName, filepath, outputDirPath, compressionSizeInKB);
+
+    // send the generate response
+    res.send({
+        status: status,
+        message: message,
+        id: id
+    });
 });
 
 // export the router

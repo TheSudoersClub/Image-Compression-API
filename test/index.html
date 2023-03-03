@@ -7,15 +7,21 @@
 
 <body>
 	<h1>Image-Compression-Api</h1>
+	<label for="compressionSizeInKB">Enter Compression Size:</label>
+	<input type="text" id="compressionSizeInKB">
+	<br>
 	<input type="file" id="fileInput">
 	<button id="submitBtn">Submit</button>
 
 	<script>
 		const submitBtn = document.getElementById("submitBtn");
 		const fileInput = document.getElementById("fileInput");
-		const compressionSizeInKB = 40;
 
 		submitBtn.addEventListener("click", async () => {
+			// get the requested compression size
+			const compressionSizeInKB = document.getElementById("compressionSizeInKB").value;
+			console.log(compressionSizeInKB);
+
 			const file = fileInput.files[0];
 
 			const formData = new FormData();
@@ -29,9 +35,8 @@
 			});
 
 			const data = await response.json();
-			const id = data.response
 
-			console.log(id);
+			console.log(data);
 		});
 	</script>
 </body>

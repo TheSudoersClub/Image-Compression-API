@@ -15,7 +15,7 @@ router.get("/:filename", (req, res) => {
         if (err) {
             res.status(404).send({
                 status: false,
-                response: "Unable to locate the file"
+                message: "Unable to locate the file"
             });
         }
     });

@@ -4,78 +4,105 @@ const sharp = require('sharp');
 // fs module to read the files
 const fs = require('fs');
 
-// exec module to run system commands - to remove (delete) the file 
-const {
-    exec
-} = require('child_process');
-
-// path for images directory (this directory contains the images that has to be compressed)
-const inputDirPath = "server/uploads/images/";
-
-// path for compressed images directory
-const outputDirPath = "server/uploads/compressed/";
-
-async function compress(imageName, targetSizeKB) {
-    const originalImagePath = inputDirPath + imageName;
+// Define the compress function
+async function compress(imageName, originalImagePath, outputDirPath, targetSizeKB) {
+    // Create a path for the compressed image
     const compressedImagePath = outputDirPath + imageName;
 
-    const inputBuffer = fs.readFileSync(originalImagePath);
+    // Read the input file
+    let inputBuffer;
+    try {
+        inputBuffer = fs.readFileSync(originalImagePath);
+    } catch (error) {
+        // If an error occurs while reading the metadata, return an error message
+        return {
+            status: false,
+            message: 'Failed to read the input file',
+            id: null
+        };
+    }
 
-    let compressionLevel = 100; // initial compression quality
-    let outputBuffer, metadata, size;
+    // Try to read image metadata to determine if the file is an image
+    let metadata;
+    try {
+        metadata = await sharp(inputBuffer).metadata();
+    } catch (error) {
 
+        // delete the unwanted file 
+        if (fs.existsSync(originalImagePath)) {
+            fs.unlinkSync(originalImagePath);
+        }
+
+        // If an error occurs while reading the metadata, return an error message
+        return {
+            status: false,
+            message: 'Input file is not an image',
+            id: null
+        };
+    }
+
+    // Set the initial compression level to 100
+    let compressionLevel = 100;
+    let outputBuffer, size;
+
+    // Keep trying to compress the image until it reaches the target size
     while (true) {
-        // Resize and compress the image with the current compression level
+        // Use Sharp to resize and compress the image
         const result = await sharp(inputBuffer)
-            .metadata()
-            .then(metadata => {
-                return sharp(inputBuffer)
-                    .resize({
-                        width: metadata.width // Set the width to the original width of the image
-                    })
-                    .jpeg({
-                        quality: compressionLevel
-                    })
-                    .toBuffer({
-                        resolveWithObject: true
-                    });
+            .resize({
+                width: metadata.width,
+                height: metadata.height
+            })
+            .jpeg({
+                quality: compressionLevel
+            })
+            .toBuffer({
+                resolveWithObject: true
             });
 
+        // Store the compressed image buffer and its size
         outputBuffer = result.data;
-        metadata = result.info;
         size = outputBuffer.length;
 
-        // Check if the compressed image size is smaller than the target size
+        // If the compressed image is smaller than the target size, break out of the loop
         if (size <= targetSizeKB * 1024) {
             break;
         }
 
-        // Increase the compression quality and try again
+        // Reduce the compression level and try again
         compressionLevel -= 5;
         if (compressionLevel <= 0) {
-            console.error('Cannot compress the image to the target size');
-            return false;
+            // If the compression level reaches 0, the image cannot be compressed to the target size
+            return {
+                status: false,
+                message: 'Cannot compress the image to the target size',
+                id: imageName
+            };
         }
     }
 
-    // Write the compressed image to file
+    // Write the compressed image buffer to a file
     fs.writeFileSync(compressedImagePath, outputBuffer);
 
-    // Remove the original image
+    // If the original file still exists, delete it
     if (fs.existsSync(originalImagePath)) {
         fs.unlinkSync(originalImagePath);
     }
 
-    // Remove the compressed image from server after 10min
+    // Schedule the compressed image to be deleted in 10 minutes
     setTimeout(() => {
         if (fs.existsSync(compressedImagePath)) {
             fs.unlinkSync(compressedImagePath);
         }
     }, 600000);
 
-    return true;
+    // Return a success message with the compressed image ID
+    return {
+        status: true,
+        message: 'Image compressed',
+        id: imageName
+    };
 }
 
-
-// export the compress function
+// Export the compress function for use in other modules
 module.exports = compress;
