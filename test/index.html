@@ -13,20 +13,24 @@
 	<script>
 		const submitBtn = document.getElementById("submitBtn");
 		const fileInput = document.getElementById("fileInput");
+		const compressionSizeInKB = 15;
 
 		submitBtn.addEventListener("click", async () => {
 			const file = fileInput.files[0];
 
 			const formData = new FormData();
+			formData.append("compressionSizeInKB", compressionSizeInKB);
 			formData.append("file", file);
+
 
 			const response = await fetch("http://localhost:3000/compress", {
 				method: "POST",
-				body: formData
-			})
+				body: formData,
+			});
 
 			const data = await response.json();
-			const id = data.id
+			const id = data.response
+
 			console.log(id);
 		});
 	</script>
