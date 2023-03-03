@@ -43,12 +43,13 @@ router.post('/', upload.single('file'), async (req, res) => {
     // process the image and get it's response
     let {
         status,
+        statusCode,
         message,
         id
     } = await compress(fileName, filepath, outputDirPath, compressionSizeInKB);
 
     // send the generate response
-    res.send({
+    res.status(statusCode).send({
         status: status,
         message: message,
         id: id

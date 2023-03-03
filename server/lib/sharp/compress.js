@@ -17,6 +17,7 @@ async function compress(imageName, originalImagePath, outputDirPath, targetSizeK
         // If an error occurs while reading the metadata, return an error message
         return {
             status: false,
+            statusCode: 400,
             message: 'Failed to read the input file',
             id: null
         };
@@ -36,6 +37,7 @@ async function compress(imageName, originalImagePath, outputDirPath, targetSizeK
         // If an error occurs while reading the metadata, return an error message
         return {
             status: false,
+            statusCode: 400,
             message: 'Input file is not an image',
             id: null
         };
@@ -75,6 +77,7 @@ async function compress(imageName, originalImagePath, outputDirPath, targetSizeK
             // If the compression level reaches 0, the image cannot be compressed to the target size
             return {
                 status: false,
+                statusCode: 500,
                 message: 'Cannot compress the image to the target size',
                 id: imageName
             };
@@ -99,6 +102,7 @@ async function compress(imageName, originalImagePath, outputDirPath, targetSizeK
     // Return a success message with the compressed image ID
     return {
         status: true,
+        statusCode: 200,
         message: 'Image compressed',
         id: imageName
     };
