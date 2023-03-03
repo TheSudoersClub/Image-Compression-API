@@ -15,7 +15,7 @@ app.use((req, res, next) => {
 });
 
 // compress endpoint
-app.use("/compress", compress);
+app.use('/compress', compress);
 
 // server listener
 app.listen(3000, () => {

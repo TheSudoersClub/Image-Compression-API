@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Image-Compression-Api</title>
+</head>
+<body>
+	<h1>Image-Compression-Api</h1>
+	<input type="file" id="fileInput">
+	<button id="submitBtn">Submit</button>
+
+	<script>
+		const submitBtn = document.getElementById("submitBtn");
+		const fileInput = document.getElementById("fileInput");
+
+		submitBtn.addEventListener("click", async () => {
+			const file = fileInput.files[0];
+
+			const formData = new FormData();
+			formData.append("file", file);
+
+			const response = await fetch("http://localhost:3000/compress", {
+				method: "POST",
+				body: formData
+			});
+
+			console.log(response);
+		});
+	</script>
+</body>
+</html>
