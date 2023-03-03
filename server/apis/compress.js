@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-// exec module to run system commands - to remove (delete) the file 
-const {
-    exec
-} = require('child_process');
+// fs module to delete the file
+const fs = require("fs");
 
 // import the upload object from upload.js
 const {
@@ -26,11 +24,9 @@ router.post('/', upload.single('file'), async (req, res) => {
 
     // delete the generated image after 10min
     setTimeout(() => {
-        exec(`rm -f "server/uploads/images/${fileName}"`, (error, stdout, stderr) => {
-            if (error) {
-                console.log(error);
-            }
-        });
+        if (fs.existsSync(`server/uploads/images/${fileName}`)) {
+            fs.unlinkSync(`server/uploads/images/${fileName}`);
+        }
     }, 10000);
 
     // process the image 

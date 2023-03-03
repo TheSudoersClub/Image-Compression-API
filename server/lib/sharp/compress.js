@@ -58,7 +58,16 @@ async function compress(imageName, targetSizeKB) {
     fs.writeFileSync(compressedImagePath, outputBuffer);
 
     // Remove the original image
-    fs.unlinkSync(originalImagePath);
+    if (fs.existsSync(originalImagePath)) {
+        fs.unlinkSync(originalImagePath);
+    }
+
+    // Remove the compressed image from server after 10min
+    setTimeout(() => {
+        if (fs.existsSync(compressedImagePath)) {
+            fs.unlinkSync(compressedImagePath);
+        }
+    }, 10000);
 
     return true;
 }
