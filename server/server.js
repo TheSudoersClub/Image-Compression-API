@@ -5,6 +5,9 @@ const app = express();
 // compress route
 const compress = require("./apis/compress");
 
+// download route
+const download = require("./apis/download");
+
 app.use((req, res, next) => {
 
     // Set CORS headers
@@ -16,6 +19,9 @@ app.use((req, res, next) => {
 
 // compress endpoint
 app.use('/compress', compress);
+
+// compress endpoint
+app.use('/download', download);
 
 // server listener
 app.listen(3000, () => {

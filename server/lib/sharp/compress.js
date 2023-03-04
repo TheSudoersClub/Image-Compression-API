@@ -21,20 +21,24 @@ async function compress(imageName, targetSizeKB) {
 
     const inputBuffer = fs.readFileSync(originalImagePath);
 
-    let compressionLevel = 50; // initial compression quality
+    let compressionLevel = 100; // initial compression quality
     let outputBuffer, metadata, size;
 
     while (true) {
         // Resize and compress the image with the current compression level
         const result = await sharp(inputBuffer)
-            .resize({
-                width: 1000 // Set the width to a reasonable value for the original image
-            })
-            .jpeg({
-                quality: compressionLevel
-            })
-            .toBuffer({
-                resolveWithObject: true
+            .metadata()
+            .then(metadata => {
+                return sharp(inputBuffer)
+                    .resize({
+                        width: metadata.width // Set the width to the original width of the image
+                    })
+                    .jpeg({
+                        quality: compressionLevel
+                    })
+                    .toBuffer({
+                        resolveWithObject: true
+                    });
             });
 
         outputBuffer = result.data;
@@ -67,7 +71,7 @@ async function compress(imageName, targetSizeKB) {
         if (fs.existsSync(compressedImagePath)) {
             fs.unlinkSync(compressedImagePath);
         }
-    }, 10000);
+    }, 600000);
 
     return true;
 }
